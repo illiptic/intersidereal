@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Intersidereal</title>
+  </head>
+  <body>
+    <div id="container"></div>
+    <div id="hud">
+      <div class="position">
+        <ul>
+          <li>X - <span id="worldX"></span></li>
+          <li>Y - <span id="worldY"></span></li>
+          <li>Z - <span id="worldZ"></span></li>
+        </ul>
+      </div>
+      <div class="accelerometer">
+        <svg>
+          <circle class="horizontal" cx="50" cy="50" r="40" />
+          <circle class="vertical" cx="50" cy="50" r="40" />
+          <line id="moveVector" class="vector" x1="50" y1="50" x2="50" y2="50" />
+
+          <marker id="markerLine" markerWidth="5" markerHeight="1" refX="5" refY="0">
+            <line class="line" x1="0" y1="0" x2="5" y2="0" />
+          </marker>
+          <line class="scale line" x1="100" y1="0" x2="100" y2="100" marker-start="url(#markerLine)" marker-end="url(#markerLine)"/>
+          <line id="moveVectorY" class="vector" x1="98" y1="50" x2="98" y2="50" />
+        </svg>
+      </div>
+      <div class="accelerometerValues">
+        <ul>
+          <li>X - <span id="accelX"></span></li>
+          <li>Y - <span id="accelY"></span></li>
+          <li>Z - <span id="accelZ"></span></li>
+        </ul>
+      </div>
+      <div class="planets">
+        <table id="planetList">
+        </table>
+      </div>
+    </div>
+    <script src="bundle.js"></script>
+  </body>
+</html>

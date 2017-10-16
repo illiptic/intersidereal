@@ -1,0 +1,73 @@
+body {
+  background-color: #000;
+}
+
+#hud {
+  position: fixed;
+  background-color: transparent;
+  bottom: 0;
+  left: 0;
+  z-index: 10000;
+  color: cyan;
+  height: 150px;
+  width: 100%;
+
+  .position {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 0;
+    left: 0;
+  }
+
+  .accelerometer {
+    width: 100px;
+    height: 100px;
+    margin: auto;
+
+    .line {
+      stroke: blue;
+      stroke-width: 1;
+    }
+
+    .vector {
+      stroke: lightblue;
+      stroke-width: 2;
+    }
+
+    circle {
+      stroke: blue;
+      stroke-width: 5;
+      stroke-dasharray: 1 9;
+      fill: none;
+      transform-origin: center;
+
+      &.horizontal {
+        transform: rotateX(70deg);
+      }
+      &.vertical {
+
+      }
+    }
+  }
+
+  .accelerometerValues {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 0;
+    right: 30%;
+  }
+
+  .planets {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border: 1px solid blue;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    padding: 5px;
+    height: 600px;
+  }
+}

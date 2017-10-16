@@ -1,0 +1,3 @@
+# intersidereal
+
+ - npm start
