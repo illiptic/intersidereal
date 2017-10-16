@@ -16,7 +16,7 @@ export function initHUD ( {planets, teleport} ) {
 }
 
 export function updateHUD ( controls ) {
-  setAccelerometer(controls.moveVector, controls.maxMovementSpeed)
+  setAccelerometer(controls.velocityVector, controls.maxMovementSpeed)
   setPosition(controls.object.getWorldPosition())
 }
 

@@ -22,7 +22,6 @@ function init () {
 	let container = document.getElementById('container')
 	let scene = new THREE.Scene()
 	let camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000000000 )
-	scene.add(camera)
 	camera.position.set(0,0,2000000)
 
 	let controls = new FlyControls( camera )

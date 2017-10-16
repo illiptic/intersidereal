@@ -29,7 +29,8 @@ export default function FlyControls ( object, domElement ) {
 	this.mouseStatus = 0;
 
 	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0 };
-	this.moveVector = new Vector3( 0, 0, 0 );
+	this.thrustVector = new Vector3( 0, 0, 0 );
+	this.velocityVector = new Vector3( 0, 0, 0 );
 	this.rotationVector = new Vector3( 0, 0, 0 );
 	this.movementSpeedMultiplier = 1
 
@@ -192,34 +193,32 @@ export default function FlyControls ( object, domElement ) {
 		var moveMult = delta * this.movementSpeed * this.movementSpeedMultiplier;
 		var rotMult = delta * this.rollSpeed;
 
-		this.object.translateX( this.moveVector.x * moveMult );
-		this.object.translateY( this.moveVector.y * moveMult );
-		this.object.translateZ( this.moveVector.z * moveMult );
-
 		this.tmpQuaternion.set( this.rotationVector.x * rotMult, this.rotationVector.y * rotMult, this.rotationVector.z * rotMult, 1 ).normalize();
 		this.object.quaternion.multiply( this.tmpQuaternion );
 
 		// expose the rotation vector for convenience
 		this.object.rotation.setFromQuaternion( this.object.quaternion, this.object.rotation.order );
 
-		// this.object.updateMatrixWorld()
-		// if (this.object.matrixWorld.equals(this.object.matrix)) {
-		// 	console.log(this.object.matrix, this.object.matrixWorld)
-		// }
-
+		// translate in world space (inertia is independent from facing)
+		let m = this.thrustVector.clone().transformDirection(this.object.matrix).multiplyScalar(this.thrustVector.length() * moveMult)
+		this.velocityVector.add(m)
+		this.object.position.add(this.velocityVector)
 	};
 
 	this.updateMovementVector = function() {
 
 		var forward = ( this.moveState.forward || ( this.autoForward && ! this.moveState.back ) ) ? 1 : 0;
 
-		this.moveVector.x = this.moveVector.x + ( - this.moveState.left    + this.moveState.right );
-		this.moveVector.y = this.moveVector.y + ( - this.moveState.down    + this.moveState.up );
-		this.moveVector.z = this.moveVector.z + ( - forward                + this.moveState.back );
+		this.thrustVector.x = ( - this.moveState.left    + this.moveState.right );
+		this.thrustVector.y = ( - this.moveState.down    + this.moveState.up );
+		this.thrustVector.z = ( - forward                + this.moveState.back );
+		// this.thrustVector.x = this.thrustVector.x + ( - this.moveState.left    + this.moveState.right );
+		// this.thrustVector.y = this.thrustVector.y + ( - this.moveState.down    + this.moveState.up );
+		// this.thrustVector.z = this.thrustVector.z + ( - forward                + this.moveState.back );
 
-		this.moveVector.clampLength(-this.maxMovementSpeed, this.maxMovementSpeed)
+		// this.thrustVector.clampLength(-this.maxMovementSpeed, this.maxMovementSpeed)
 
-		// console.log( 'move:', [ this.moveVector.x, this.moveVector.y, this.moveVector.z ] );
+		// console.log( 'move:', [ this.thrustVector.x, this.thrustVector.y, this.thrustVector.z ] );
 	};
 
 	this.updateRotationVector = function() {
