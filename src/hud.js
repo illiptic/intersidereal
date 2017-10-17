@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import {getContainerDimensions} from './utils.js'
 // import {getState} from './stateManager.js'
 const hud = document.getElementById('hud')
 const moveVector = document.getElementById('moveVector')
@@ -11,6 +12,8 @@ const accel = {
 const pos = _.fromPairs(['x', 'y', 'z'].map(c => [c, document.getElementById('world' + c.toUpperCase())]))
 const planetList = document.getElementById('planetList')
 
+let pings = {}
+
 export function initHUD ( {planets, teleport} ) {
   listPlanets(planets, teleport)
 }
@@ -18,6 +21,41 @@ export function initHUD ( {planets, teleport} ) {
 export function updateHUD ( controls ) {
   setAccelerometer(controls.velocityVector, controls.thrustVector)
   setPosition(controls.object.getWorldPosition())
+}
+
+export function pingHUD ( projections ) {
+  _.forEach(pings, p => {p.visible = false})
+
+  projections.forEach(({id, coords, d}) => {
+    if (!pings[id]) {
+      pings[id] = { id, ...createPing(id) }
+    }
+    pings[id].visible = true
+    pings[id].dist.innerHTML = formatNumber(d)
+    var container = getContainerDimensions()
+    var halfWidth  = container.size[ 0 ] / 2
+    var halfHeight = container.size[ 1 ] / 2
+
+    pings[id].el.style.left = Math.round(coords.x * halfWidth + halfWidth) + 'px'
+    pings[id].el.style.top = Math.round(- coords.y * halfHeight + halfHeight) + 'px'
+  })
+
+  let rejects = _.reject(pings, 'visible')
+  rejects.map(p => {
+    if (p.el.parentNode) { hud.removeChild(p.el) }
+    else {debugger}
+    return p.id
+  }).forEach(id => { delete pings[id] })
+}
+
+function createPing (id) {
+  let el = document.createElement('div')
+  let dist = document.createElement('div')
+  dist.className = 'distance'
+  el.appendChild(dist)
+  el.className = 'ping ' + id
+  hud.appendChild(el)
+  return {el, dist}
 }
 
 function setAccelerometer(velocity, thrust) {

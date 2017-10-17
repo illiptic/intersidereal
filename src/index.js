@@ -5,7 +5,7 @@ import Stats from 'stats.js'
 import MT from 'mersenne-twister'
 
 import {getState, setState} from './stateManager.js'
-import {initHUD, updateHUD} from './hud.js'
+import {initHUD, updateHUD, pingHUD} from './hud.js'
 import FlyControls from './FlyControls.js'
 import loadTextures from './textureLoader.js'
 
@@ -96,6 +96,9 @@ loadTextures()
 
 let prevT = 0
 
+let frustum = new THREE.Frustum()
+let cameraViewProjectionMatrix = new THREE.Matrix4()
+
 function animate(t) {
   requestAnimationFrame( animate )
   stats.begin()
@@ -105,6 +108,23 @@ function animate(t) {
 	controls.update( delta );
 
 	updateHUD( controls )
+
+	// frustum
+	camera.updateMatrixWorld(); // make sure the camera matrix is updated
+	camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+	frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
+	scene.children.forEach(c => {
+		if (c.type === 'Group') {
+			let projs = c.children.map(o => {
+				if (frustum.intersectsObject( o )) {
+					let d = o.position.distanceTo(camera.position)
+					return {d, coords: o.position.clone().project(camera), id: o.uuid}
+				}
+			}).filter(o => !!o)
+
+			pingHUD( projs )
+		}
+	})
 
 	// let close = false
 	// for (let i in starField.geometry.vertices) {
