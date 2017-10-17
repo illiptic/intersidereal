@@ -16,20 +16,28 @@ export function initHUD ( {planets, teleport} ) {
 }
 
 export function updateHUD ( controls ) {
-  setAccelerometer(controls.velocityVector, controls.maxMovementSpeed)
+  setAccelerometer(controls.velocityVector, controls.thrustVector)
   setPosition(controls.object.getWorldPosition())
 }
 
-function setAccelerometer(aV, max) {
-  moveVector.setAttribute('x2', parseInt(moveVector.x1.baseVal.value) + Math.round(aV.x/max*40))
-  moveVector.setAttribute('y2', parseInt(moveVector.y1.baseVal.value) + Math.round(aV.z/max*15))
-  moveVectorY.setAttribute('y2', parseInt(moveVector.y1.baseVal.value) + Math.round(-aV.y/max*50))
+function setAccelerometer(velocity, thrust) {
+  let x2,y2
+  if (thrust.x && thrust.z) {
+    x2 = thrust.x * 25
+    y2 = thrust.z * 12
+  } else {
+    x2 = thrust.x * 42
+    y2 = thrust.z * 15
+  }
+  moveVector.setAttribute('x2', parseInt(moveVector.x1.baseVal.value) + x2)
+  moveVector.setAttribute('y2', parseInt(moveVector.y1.baseVal.value) + y2)
+  moveVectorY.setAttribute('y2', parseInt(moveVector.y1.baseVal.value) - thrust.y * 50)
 
-  _.forEach(aV, (v, k) => accel[k].innerText = Math.round(k === 'z' ? -v : v))
+  _.forEach(velocity, (v, k) => accel[k].innerHTML = formatNumber(k === 'z' ? -v : v))
 }
 
 function setPosition(position) {
-  _.forEach(position, (v, k) => pos[k].innerText = v.toPrecision(2))
+  _.forEach(position, (v, k) => pos[k].innerHTML = formatNumber(v))
 }
 
 function listPlanets (planets, teleport) {
@@ -38,10 +46,13 @@ function listPlanets (planets, teleport) {
     let c1 = document.createElement('td')
     let c2 = document.createElement('td')
     item.onclick = teleport.bind(null, {x,y,z})
-    c1.innerHTML = [x.toPrecision(2), y.toPrecision(2), z.toPrecision(2)].join('<br/>')
-    c2.innerHTML = distance.toPrecision(2)
+    c1.innerHTML = formatNumbers([x,y,z]).join('<br/>')
+    c2.innerHTML = formatNumber(distance)
     item.appendChild(c1)
     item.appendChild(c2)
     planetList.appendChild(item)
   });
 }
+
+const formatNumbers = (nums) => nums.map(formatNumber)
+const formatNumber = (num) => num.toPrecision(3).split(/e[\+\-]/).join(' e<sup>')+'</sup>'

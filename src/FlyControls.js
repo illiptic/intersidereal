@@ -18,7 +18,7 @@ export default function FlyControls ( object, domElement ) {
 	this.dragToLook = false;
 	this.autoForward = false;
 
-  this.maxMovementSpeed = 50;
+	this.dampeningFactor = 0.9
 
 	// disable default target object behavior
 
@@ -28,7 +28,7 @@ export default function FlyControls ( object, domElement ) {
 
 	this.mouseStatus = 0;
 
-	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0 };
+	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0, dampening: 0 };
 	this.thrustVector = new Vector3( 0, 0, 0 );
 	this.velocityVector = new Vector3( 0, 0, 0 );
 	this.rotationVector = new Vector3( 0, 0, 0 );
@@ -76,6 +76,7 @@ export default function FlyControls ( object, domElement ) {
 			case 81: /*Q*/ this.moveState.rollLeft = 1; break;
 			case 69: /*E*/ this.moveState.rollRight = 1; break;
 
+			case 32: /* space */ this.moveState.dampening = 1; break;
 		}
 
 		this.updateMovementVector();
@@ -107,6 +108,7 @@ export default function FlyControls ( object, domElement ) {
 			case 81: /*Q*/ this.moveState.rollLeft = 0; break;
 			case 69: /*E*/ this.moveState.rollRight = 0; break;
 
+			case 32: /* space */ this.moveState.dampening = 0; break;
 		}
 
 		this.updateMovementVector();
@@ -202,6 +204,10 @@ export default function FlyControls ( object, domElement ) {
 		// translate in world space (inertia is independent from facing)
 		let m = this.thrustVector.clone().transformDirection(this.object.matrix).multiplyScalar(this.thrustVector.length() * moveMult)
 		this.velocityVector.add(m)
+		if (this.moveState.dampening) {
+			let thrust = new Vector3().setScalar(this.dampeningFactor)
+			this.velocityVector.multiply(thrust).roundToZero()
+		}
 		this.object.position.add(this.velocityVector)
 	};
 
@@ -212,11 +218,6 @@ export default function FlyControls ( object, domElement ) {
 		this.thrustVector.x = ( - this.moveState.left    + this.moveState.right );
 		this.thrustVector.y = ( - this.moveState.down    + this.moveState.up );
 		this.thrustVector.z = ( - forward                + this.moveState.back );
-		// this.thrustVector.x = this.thrustVector.x + ( - this.moveState.left    + this.moveState.right );
-		// this.thrustVector.y = this.thrustVector.y + ( - this.moveState.down    + this.moveState.up );
-		// this.thrustVector.z = this.thrustVector.z + ( - forward                + this.moveState.back );
-
-		// this.thrustVector.clampLength(-this.maxMovementSpeed, this.maxMovementSpeed)
 
 		// console.log( 'move:', [ this.thrustVector.x, this.thrustVector.y, this.thrustVector.z ] );
 	};
