@@ -7,7 +7,7 @@ import MT from 'mersenne-twister'
 import {getState, setState} from './stateManager.js'
 import {initHUD, updateHUD, pingHUD} from './hud.js'
 import FlyControls from './FlyControls.js'
-import loadTextures from './textureLoader.js'
+import loadTextures, {loadSprite} from './textureLoader.js'
 
 const generator = new MT(236575)
 
@@ -18,9 +18,12 @@ function initStats () {
 	return stats
 }
 
-function init () {
+function init (background) {
 	let container = document.getElementById('container')
 	let scene = new THREE.Scene()
+
+	scene.background = new THREE.CubeTextureLoader().load( ['/assets/stars.png','/assets/stars.png','/assets/stars.png','/assets/stars.png','/assets/stars.png','/assets/stars.png'] )
+
 	let camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000000000 )
 	camera.position.set(0,0,2000000)
 
@@ -31,7 +34,7 @@ function init () {
 	controls.autoForward = false;
 	controls.dragToLook = true;
 
-	let renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true})
+	let renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, alpha: true})
 	renderer.setSize( window.innerWidth, window.innerHeight )
 
 	container.appendChild( renderer.domElement )
@@ -39,15 +42,24 @@ function init () {
 	return {renderer, scene, camera, controls}
 }
 
-function makeSector (scene, textures) {
+function makeSector (scene, textures, sprite) {
 	let system = new THREE.Group()
 
 	let starSize = 700000
-	let star = new THREE.Mesh( new THREE.SphereBufferGeometry( starSize, 16, 16 ), new THREE.MeshBasicMaterial() );
+	let star = new THREE.Mesh( new THREE.SphereBufferGeometry( starSize, 16, 16 ), new THREE.MeshBasicMaterial({wireframe: false, depthWrite: false, opacity: 1, transparent: true}) );
 	star.position.set(0,0,0)
-	star.material.opacity = 0.5
+	star.opacity = 0
   star.add(new THREE.PointLight( 0xFDFDFD, 2 ));
 	system.add(star)
+
+	let glowMaterial = new THREE.SpriteMaterial({
+		map: sprite, //new THREE.TextureLoader().load( '/assets/glow.png' ),
+		//useScreenCoordinates: false, alignment: THREE.SpriteAlignment.center,
+		color: 0xffffff, transparent: false, blending: THREE.AdditiveBlending
+	})
+	let glow = new THREE.Sprite( glowMaterial )
+	glow.scale.set(30*starSize, 30*starSize, 1)
+	star.add(glow)
 
 	let planetCount = (generator.random() * 10) + 1
 	let planets = []
@@ -66,11 +78,18 @@ function makeSector (scene, textures) {
 }
 
 let stats = initStats()
-let {renderer, scene, camera, controls} = init()
-
-loadTextures()
-	.then((textures) => {
-		initHUD({planets: makeSector(scene, textures), teleport})
+let renderer, scene, camera, controls
+loadSprite('stars')
+	.then(background => {
+		return {renderer, scene, camera, controls} = init(background)
+	}).then(loadTextures)
+	.then(textures => {
+		return loadSprite('lensflare0centered').then(sprite => {
+			return {textures, sprite}
+		})
+	})
+	.then(({textures, sprite}) => {
+		initHUD({planets: makeSector(scene, textures, sprite), teleport})
 		requestAnimationFrame( animate )
 	})
 
@@ -79,20 +98,6 @@ loadTextures()
 // var skybox = new THREE.Mesh( new THREE.BoxGeometry(2000, 2000, 2000, 1, 1, 1 ), material );
 // skybox.scale.set(-1,1,1)
 // scene.add( skybox );
-
-//This will add a starfield to the background of a scene
-// var starsGeometry = new THREE.Geometry();
-//
-// for ( var i = 0; i < 10000; i ++ ) {
-// 	var star = new THREE.Vector3();
-// 	star.x = (generator.random() * 2000) - 1000;
-// 	star.y = (generator.random() * 2000) - 1000;
-// 	star.z = (generator.random() * 2000) - 1000;
-// 	starsGeometry.vertices.push( star );
-// }
-// var starsMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
-// var starField = new THREE.Points( starsGeometry, starsMaterial );
-// scene.add( starField );
 
 let prevT = 0
 
