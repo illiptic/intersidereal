@@ -1,29 +1,30 @@
 import _ from 'lodash'
+import {Frustum, Matrix4} from 'three'
 import {getContainerDimensions} from './utils.js'
 // import {getState} from './stateManager.js'
+
+// domNodes
 const hud = document.getElementById('hud')
 const moveVector = document.getElementById('moveVector')
 const moveVectorY = document.getElementById('moveVectorY')
-const accel = {
-  x: document.getElementById('accelX'),
-  y: document.getElementById('accelY'),
-  z: document.getElementById('accelZ')
-}
+const accel = _.fromPairs(['x', 'y', 'z'].map(c => [c, document.getElementById('accel' + c.toUpperCase())]))
 const pos = _.fromPairs(['x', 'y', 'z'].map(c => [c, document.getElementById('world' + c.toUpperCase())]))
 const planetList = document.getElementById('planetList')
 
-let pings = {}
+const pings = {}
+const frustum = new Frustum()
 
 export function initHUD ( {planets, teleport} ) {
   listPlanets(planets, teleport)
 }
 
-export function updateHUD ( controls ) {
+export function updateHUD ( scene, controls ) {
   setAccelerometer(controls.velocityVector, controls.thrustVector)
   setPosition(controls.object.getWorldPosition())
+  setPings(getVisibleObjects(scene.children[0], controls.object))
 }
 
-export function pingHUD ( projections ) {
+export function setPings ( projections ) {
   _.forEach(pings, p => {p.visible = false})
 
   projections.forEach(({id, coords, d}) => {
@@ -46,6 +47,21 @@ export function pingHUD ( projections ) {
     else {debugger}
     return p.id
   }).forEach(id => { delete pings[id] })
+}
+
+function getVisibleObjects (system, camera) {
+  camera.updateMatrixWorld(); // make sure the camera matrix is updated
+	camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+	frustum.setFromMatrix( new Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
+	// scene.children.forEach(c => {
+	// 	if (c.type === 'Group') {
+			return system.children.map(o => {
+				if (frustum.intersectsObject( o )) {
+					let d = o.position.distanceTo(camera.position)
+					return {d, coords: o.position.clone().project(camera), id: o.uuid}
+				}
+			}).filter(o => !!o)
+	// })
 }
 
 function createPing (id) {
@@ -79,11 +95,12 @@ function setPosition(position) {
 }
 
 function listPlanets (planets, teleport) {
-  planets.forEach(({x,y,z, distance}) => {
+  planets.forEach(({position, distance}) => {
     let item = document.createElement('tr')
     let c1 = document.createElement('td')
     let c2 = document.createElement('td')
-    item.onclick = teleport.bind(null, {x,y,z})
+    item.onclick = teleport.bind(null, position)
+    let {x,y,z} = position
     c1.innerHTML = formatNumbers([x,y,z]).join('<br/>')
     c2.innerHTML = formatNumber(distance)
     item.appendChild(c1)
