@@ -15,7 +15,8 @@ export default class Star {
   		color: 0xffffff, transparent: false, blending: THREE.AdditiveBlending
   	})
   	let glow = new THREE.Sprite( glowMaterial )
-  	glow.scale.set(30*starSize, 30*starSize, 1) // find relationship with star size? 
+  	glow.scale.set(30*starSize, 30*starSize, 1) // find relationship with star size?
   	this.mesh.add(glow)
+    this.mesh.name = 'star'
   }
 }

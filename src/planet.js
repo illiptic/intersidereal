@@ -23,5 +23,6 @@ export default class Planet {
       new THREE.MeshPhongMaterial({map: loadTexture(texture)})
     );
     this.mesh.position.set(x,y,z).clampLength(58000000, 800000000)
+    this.mesh.name = 'planet'
   }
 }

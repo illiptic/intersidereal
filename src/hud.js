@@ -56,8 +56,8 @@ function getVisibleObjects (system, camera) {
 	// scene.children.forEach(c => {
 	// 	if (c.type === 'Group') {
 			return system.children.map(o => {
-				if (frustum.intersectsObject( o )) {
-					let d = o.position.distanceTo(camera.position)
+				if (o.name && frustum.intersectsObject( o )) {
+					let d = o.position.distanceTo(camera.position) - o.geometry.boundingSphere.radius
 					return {d, coords: o.position.clone().project(camera), id: o.uuid}
 				}
 			}).filter(o => !!o)
