@@ -46,13 +46,14 @@ function init (background) {
 
 function makeSector (scene) {
 	let system = new System(generator)
-
-	return system.create({scene})
+	scene.add(system.system)
+	return system
 }
 
 let stats = initStats()
 let {renderer, scene, camera, controls} = init()
-initHUD({planets: makeSector(scene), teleport})
+let sector = makeSector(scene)
+initHUD({planets: sector.planets, teleport})
 requestAnimationFrame( animate )
 
 let prevT = 0
@@ -64,6 +65,7 @@ function animate(t) {
   let delta = (t-prevT)/1000
 
 	controls.update( delta );
+	sector.update()
 	updateHUD( scene, controls )
 
 	renderer.render( scene, camera );

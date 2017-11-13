@@ -7,7 +7,7 @@ export default class Star {
   	this.mesh = new THREE.Mesh( new THREE.SphereBufferGeometry( starSize, 16, 16 ), new THREE.MeshBasicMaterial({wireframe: false, depthWrite: false, opacity: 1, transparent: true}) );
     this.mesh.position.set(0,0,0)
 
-    this.light = new THREE.PointLight( 0xFDFDFD, 2 )
+    this.light = new THREE.PointLight( 0xFDFDFD, 1.5 )
     this.mesh.add(this.light);
 
     let glowMaterial = new THREE.SpriteMaterial({

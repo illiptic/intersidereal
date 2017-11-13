@@ -57,8 +57,9 @@ function getVisibleObjects (system, camera) {
 	// 	if (c.type === 'Group') {
 			return system.children.map(o => {
 				if (o.name && frustum.intersectsObject( o )) {
-					let d = o.position.distanceTo(camera.position) - o.geometry.boundingSphere.radius
-					return {d, coords: o.position.clone().project(camera), id: o.uuid}
+          let position = o.getWorldPosition()
+					let d = position.distanceTo(camera.position) - o.geometry.boundingSphere.radius
+					return {d, coords: position.project(camera), id: o.uuid}
 				}
 			}).filter(o => !!o)
 	// })

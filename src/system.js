@@ -3,13 +3,7 @@ import Star from './star.js'
 import Planet from './planet.js'
 
 export default class System {
-  constructor (generator) {
-    this.generator = generator
-  }
-
-  create ({scene}) {
-    let {generator} = this
-
+  constructor (generator, scene) {
     let system = new THREE.Group()
 
     let star = new Star()
@@ -20,14 +14,14 @@ export default class System {
   	for ( var i = 0; i < planetCount; i ++ ) {
   		let planet = new Planet(generator)
   		system.add( planet.mesh )
-  		planets.push({position: planet.mesh.position.clone(), distance: planet.mesh.position.length()})
+  		planets.push({update: planet.update.bind(planet), position: planet.mesh.position.clone(), distance: planet.mesh.position.length(), ...planet})
   	}
 
-  	scene.add( system )
-  	return planets
+  	this.system = system
+    this.planets = planets
   }
 
   update () {
-    // nothing yet
+    this.planets.forEach(p => p.update && p.update())
   }
 }
