@@ -15,13 +15,13 @@ const pings = {}
 const frustum = new Frustum()
 
 export function initHUD ( {planets, teleport} ) {
-  listPlanets(planets, teleport)
+  // listPlanets(planets, teleport)
 }
 
-export function updateHUD ( scene, controls ) {
+export function updateHUD ( system, controls, camera ) {
   setAccelerometer(controls.velocityVector, controls.thrustVector)
-  setPosition(controls.object.getWorldPosition())
-  setPings(getVisibleObjects(scene.children[0], controls.object))
+  // setPosition(controls.object.getWorldPosition())
+  setPings(getVisibleObjects(system, camera))
 }
 
 export function setPings ( projections ) {
@@ -53,16 +53,13 @@ function getVisibleObjects (system, camera) {
   camera.updateMatrixWorld(); // make sure the camera matrix is updated
 	camera.matrixWorldInverse.getInverse( camera.matrixWorld );
 	frustum.setFromMatrix( new Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
-	// scene.children.forEach(c => {
-	// 	if (c.type === 'Group') {
-			return system.children.map(o => {
-				if (o.name && frustum.intersectsObject( o )) {
-          let position = o.getWorldPosition()
-					let d = position.distanceTo(camera.position) - o.geometry.boundingSphere.radius
-					return {d, coords: position.project(camera), id: o.uuid}
-				}
-			}).filter(o => !!o)
-	// })
+	return system.children.map(o => {
+		if (o.name && frustum.intersectsObject( o )) {
+      let position = o.getWorldPosition()
+			let d = position.distanceTo(camera.getWorldPosition()) - o.geometry.boundingSphere.radius
+			return {d, coords: position.project(camera), id: o.uuid}
+		}
+	}).filter(o => !!o)
 }
 
 function createPing (id) {

@@ -1,11 +1,12 @@
 /*
  * based on code by James Baicoianu / http://www.baicoianu.com/
  */
-import {Quaternion, Vector3, Math} from 'three'
+import {Quaternion, Vector2, Vector3, Spherical, Math as THREEMath} from 'three'
 
-export default function FlyControls ( object, domElement ) {
+export default function FlyControls ( object, camera, domElement ) {
 
 	this.object = object;
+	this.camera = camera
 
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 	if ( domElement ) this.domElement.setAttribute( 'tabindex', - 1 );
@@ -15,7 +16,6 @@ export default function FlyControls ( object, domElement ) {
 	this.movementSpeed = 1.0;
 	this.rollSpeed = 0.005;
 
-	this.dragToLook = false;
 	this.autoForward = false;
 
 	this.dampeningFactor = 0.9
@@ -27,6 +27,10 @@ export default function FlyControls ( object, domElement ) {
 	this.tmpQuaternion = new Quaternion();
 
 	this.mouseStatus = 0;
+
+  this.lookState = {x: 0, y: 0}
+	this.lookVector = new Vector3( 0, 0, 0 );
+	this.lookAngle = new Vector2(0, Math.PI/2)
 
 	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0, dampening: 0 };
 	this.thrustVector = new Vector3( 0, 0, 0 );
@@ -117,38 +121,22 @@ export default function FlyControls ( object, domElement ) {
 	};
 
 	this.mousedown = function( event ) {
-
 		if ( this.domElement !== document ) {
-
 			this.domElement.focus();
-
 		}
 
 		event.preventDefault();
 		event.stopPropagation();
 
-		if ( this.dragToLook ) {
-
-			this.mouseStatus ++;
-
-		} else {
-
-			switch ( event.button ) {
-
-				case 0: this.moveState.forward = 1; break;
-				case 2: this.moveState.back = 1; break;
-
-			}
-
-			this.updateMovementVector();
-
+		switch ( event.button ) {
+			case 0: this.mouseStatus = 1; break;
+			case 2: this.mouseStatus = 2; break;
 		}
-
 	};
 
 	this.mousemove = function( event ) {
 
-		if ( ! this.dragToLook || this.mouseStatus > 0 ) {
+		if ( this.mouseStatus  === 2 ) {
 
 			var container = this.getContainerDimensions();
 			var halfWidth  = container.size[ 0 ] / 2;
@@ -159,6 +147,15 @@ export default function FlyControls ( object, domElement ) {
 
 			this.updateRotationVector();
 
+		} else if (this.mouseStatus === 1) {
+			var container = this.getContainerDimensions();
+			var halfWidth  = container.size[ 0 ] / 2;
+			var halfHeight = container.size[ 1 ] / 2;
+
+			this.lookState.x = - ( ( event.pageX - container.offset[ 0 ] ) - halfWidth  ) / halfWidth * 2;
+			this.lookState.y =   ( ( event.pageY - container.offset[ 1 ] ) - halfHeight ) / halfHeight * 2;
+
+			this.updateLookVector()
 		}
 
 	};
@@ -168,25 +165,21 @@ export default function FlyControls ( object, domElement ) {
 		event.preventDefault();
 		event.stopPropagation();
 
-		if ( this.dragToLook ) {
+		switch ( event.button ) {
 
-			this.mouseStatus --;
-
-			this.moveState.yawLeft = this.moveState.pitchDown = 0;
-
-		} else {
-
-			switch ( event.button ) {
-
-				case 0: this.moveState.forward = 0; break;
-				case 2: this.moveState.back = 0; break;
-
+			case 0: {
+				this.mouseStatus = 0;
+				this.lookState.x = this.lookState.y = 0;
+				break;
+			}
+			case 2: {
+				this.mouseStatus = 0;
+				this.moveState.yawLeft = this.moveState.pitchDown = 0;
+				break;
 			}
 
-			this.updateMovementVector();
-
 		}
-
+		this.updateLookVector()
 		this.updateRotationVector();
 
 	};
@@ -209,6 +202,15 @@ export default function FlyControls ( object, domElement ) {
 			this.velocityVector.multiply(thrust).roundToZero()
 		}
 		this.object.position.add(this.velocityVector)
+
+		// look around
+		let cam = this.camera
+		this.lookAngle.x -= this.lookVector.x * rotMult
+		this.lookAngle.y += this.lookVector.y * rotMult
+		this.lookAngle.y = THREEMath.clamp(this.lookAngle.y, Math.PI / 4, 3*Math.PI/4)
+		let spherical = new Spherical(400, this.lookAngle.y, this.lookAngle.x)
+		cam.position.setFromSpherical(spherical)
+		cam.rotation.set(this.lookAngle.y - Math.PI / 2, this.lookAngle.x, 0, 'YXZ')
 	};
 
 	this.updateMovementVector = function() {
@@ -231,6 +233,11 @@ export default function FlyControls ( object, domElement ) {
 		//console.log( 'rotate:', [ this.rotationVector.x, this.rotationVector.y, this.rotationVector.z ] );
 
 	};
+
+	this.updateLookVector = function () {
+		this.lookVector.x = - this.lookState.x
+		this.lookVector.y = this.lookState.y
+	}
 
 	this.getContainerDimensions = function() {
 
@@ -297,5 +304,5 @@ export default function FlyControls ( object, domElement ) {
 
 	this.updateMovementVector();
 	this.updateRotationVector();
-
+	this.updateLookVector();
 };

@@ -1,10 +1,14 @@
 import _ from 'lodash'
-import { TextureLoader, CubeTextureLoader } from 'three'
-
+import * as THREE from 'three'
 const basePath = '/assets/'
 
-const textureLoader = new TextureLoader().setPath(basePath)
-const cubeTextureLoader = new CubeTextureLoader().setPath(basePath)
+window.THREE = THREE
+require("three/examples/js/loaders/OBJLoader2")
+
+const textureLoader = new THREE.TextureLoader().setPath(basePath)
+const cubeTextureLoader = new THREE.CubeTextureLoader().setPath(basePath)
+const objLoader = new THREE.OBJLoader2()
+objLoader.setPath(basePath)
 
 export const loadTexture = textureLoader.load.bind(textureLoader)
 
@@ -14,5 +18,12 @@ export function loadSprite (name, type = 'png') {
   return new Promise((resolve, reject) => {
     let path = [name, type].join('.')
     textureLoader.load(path, resolve, null, reject)
+  })
+}
+
+export function loadModel (name) {
+  return new Promise((resolve, reject) => {
+    let path = name + '.obj'
+    objLoader.load(path, resolve, ()=>{}, reject)
   })
 }

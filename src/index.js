@@ -9,6 +9,7 @@ import {initHUD, updateHUD, pingHUD} from './hud.js'
 import FlyControls from './FlyControls.js'
 import {loadSprite, loadCubeTexture} from './loaders.js'
 
+import Ship from './ship.js'
 import System from './system.js'
 
 const generator = new MT(236575)
@@ -26,10 +27,14 @@ function init (background) {
 
 	scene.background = loadCubeTexture('stars.png')
 
+	// Attach camera to ship
 	let camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000000000 )
-	camera.position.set(0,0,2000000)
+	let ship = new Ship()
+	ship.mesh.position.set(0,0,1999900)
+	ship.mesh.add(camera)
+	scene.add(ship.mesh)
 
-	let controls = new FlyControls( camera )
+	let controls = new FlyControls( ship.mesh, camera )
 	controls.movementSpeed = 1000;
 	controls.domElement = container
 	controls.rollSpeed = Math.PI / 12;
@@ -66,7 +71,7 @@ function animate(t) {
 
 	controls.update( delta );
 	sector.update()
-	updateHUD( scene, controls )
+	updateHUD( sector.system, controls, camera )
 
 	renderer.render( scene, camera );
 
