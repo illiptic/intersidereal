@@ -1,13 +1,8 @@
 import _ from 'lodash'
 import * as THREE from 'three'
-import {loadTexture} from './loaders.js'
 
 export default class Dust {
   constructor () {
-    // const material = new THREE.SpriteMaterial({
-  	// 	map: loadTexture('glow.png'),
-  	// 	color: 0xffffff, blending: THREE.AdditiveBlending
-  	// })
     const material = new THREE.LineBasicMaterial({
       color: 0xffffff
     });
@@ -18,11 +13,8 @@ export default class Dust {
     );
 
     this.particles = _.range(30).map(() => {
-      // let s = new THREE.Sprite( material )
-      // s.position.set(1000,1000,1000)
-      // s.scale.set(3, 3, 1)
-
       let s = new THREE.Line( this.geometry, material );
+      s.position.set(1000,1000,1000)
       return s
     })
 
@@ -45,12 +37,14 @@ export default class Dust {
   }
 
   updateEffect(velocity) {
-    let speed = THREE.Math.clamp(Math.log(velocity.length()), 5, 30)
+    let speed = THREE.Math.clamp(Math.log10(velocity.length()), 5, 10)
     let delta = velocity.clone().normalize().multiplyScalar(-speed)
     let plane = new THREE.Plane(delta.clone().normalize(), 200)
 
-    if (!this.geometry.vertices[1].equals(delta)) {
-      this.geometry.vertices[1].copy(delta)
+    let sp = THREE.Math.clamp(Math.log10(velocity.length()) * 2, 1, 20)
+    let dl = velocity.clone().normalize().multiplyScalar(-sp)
+    if (!this.geometry.vertices[1].equals(dl)) {
+      this.geometry.vertices[1].copy(dl)
       this.geometry.verticesNeedUpdate = true
     }
 
