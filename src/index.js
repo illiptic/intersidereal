@@ -11,6 +11,7 @@ import {loadSprite, loadCubeTexture} from './loaders.js'
 
 import Ship from './ship.js'
 import System from './system.js'
+import Dust from './dust.js'
 
 const generator = new MT(236575)
 
@@ -41,12 +42,15 @@ function init (background) {
 	controls.autoForward = false;
 	controls.dragToLook = true;
 
+	const dust = new Dust()
+	scene.add(dust.object)
+
 	let renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, alpha: true})
 	renderer.setSize( window.innerWidth, window.innerHeight )
 
 	container.appendChild( renderer.domElement )
 
-	return {renderer, scene, camera, controls}
+	return {renderer, scene, camera, controls, dust}
 }
 
 function makeSector (scene) {
@@ -56,7 +60,7 @@ function makeSector (scene) {
 }
 
 let stats = initStats()
-let {renderer, scene, camera, controls} = init()
+let {renderer, scene, camera, controls, dust} = init()
 let sector = makeSector(scene)
 initHUD({planets: sector.planets, teleport})
 requestAnimationFrame( animate )
@@ -71,6 +75,7 @@ function animate(t) {
 
 	controls.update( delta );
 	sector.update()
+	dust.update(controls, camera)
 	updateHUD( sector.system, controls, camera )
 
 	renderer.render( scene, camera );
