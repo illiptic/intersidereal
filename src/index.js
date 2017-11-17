@@ -31,7 +31,7 @@ function init (background) {
 	// Attach camera to ship
 	let camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000000000 )
 	let ship = new Ship()
-	ship.mesh.position.set(0,0,1999900)
+	ship.mesh.position.set(5000000,0,1999900)
 	ship.mesh.add(camera)
 	scene.add(ship.mesh)
 
@@ -50,7 +50,7 @@ function init (background) {
 
 	container.appendChild( renderer.domElement )
 
-	return {renderer, scene, camera, controls, dust}
+	return {renderer, scene, camera, controls, dust, ship}
 }
 
 function makeSector (scene) {
@@ -60,7 +60,7 @@ function makeSector (scene) {
 }
 
 let stats = initStats()
-let {renderer, scene, camera, controls, dust} = init()
+let {renderer, scene, camera, controls, dust, ship} = init()
 let sector = makeSector(scene)
 initHUD({planets: sector.planets, teleport})
 requestAnimationFrame( animate )
@@ -76,6 +76,7 @@ function animate(t) {
 	controls.update( delta );
 	sector.update()
 	dust.update(controls, camera)
+	ship.update(controls)
 	updateHUD( sector.system, controls, camera )
 
 	renderer.render( scene, camera );
