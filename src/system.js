@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import {loadCubeTexture} from './loaders.js'
+
 import Star from './star.js'
 import Planet from './planet.js'
 
@@ -19,6 +21,9 @@ export default class System {
 
   	this.system = system
     this.planets = planets
+
+    //TODO: vary with generator
+    scene.background = loadCubeTexture('stars.png')
   }
 
   update () {
