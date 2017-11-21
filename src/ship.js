@@ -36,7 +36,7 @@ export default class Ship {
     let thruster = new THREE.Mesh( geometry, material );
     thruster.position.set(...position)
     thruster.rotation.set(0, 0, -Math.PI/2)
-    let light = new THREE.PointLight( 0xAAAAFF, 0.7, 0 )
+    let light = new THREE.PointLight( 0xAAAAFF, 0.7, 200 )
     light.position.y = 5
     thruster.add(light)
     return thruster
