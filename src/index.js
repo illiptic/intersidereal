@@ -13,8 +13,6 @@ import Ship from './ship.js'
 import System from './system.js'
 import Dust from './dust.js'
 
-const generator = new MT(236575)
-
 function initStats () {
 	const stats = new Stats();
 	stats.showPanel( 0 )
@@ -53,17 +51,28 @@ function init (background) {
 	return {renderer, scene, camera, controls, dust, ship}
 }
 
-function makeSector (scene) {
-	let system = new System(generator)
-	scene.add(system.system)
-	return system
+function makeSector (scene, seed) {
+	let {currentSector} = getState()
+	if (currentSector) {
+		scene.remove(currentSector.system)
+	}
+	currentSector = new System(new MT(seed))
+	scene.add(currentSector.system)
+	setState({currentSector})
+	return currentSector
 }
 
 let stats = initStats()
 let {renderer, scene, camera, controls, dust, ship} = init()
-let sector = makeSector(scene)
+let sector = makeSector(scene, 236575)
 initHUD({planets: sector.planets, teleport})
 requestAnimationFrame( animate )
+
+// jumping vars
+let listening = false
+let seed = ''
+let jumping = false
+let effect
 
 let prevT = 0
 
@@ -72,6 +81,15 @@ function animate(t) {
   stats.begin()
 
   let delta = (t-prevT)/1000
+
+	if (jumping) {
+		if (effect.scale.length() > 100) {
+			jumping = false
+			sector = makeSector(scene, seed)
+			scene.remove(effect)
+		}
+		effect.scale.multiplyScalar(1.25)
+	}
 
 	controls.update( delta );
 	sector.update()
@@ -89,3 +107,26 @@ function teleport ({x,y,z}) {
 	camera.position.set(x,y,z - 250000)
 	camera.lookAt({x,y,z})
 }
+
+function initJump () {
+	effect = new THREE.Mesh( new THREE.SphereBufferGeometry( 10, 32, 32 ), new THREE.MeshBasicMaterial({color: 0, side: THREE.DoubleSide}) );
+	effect.position.copy(controls.object.position)
+	scene.add(effect)
+}
+
+
+window.addEventListener( 'keypress', event => {
+	if ( event.altKey ) {
+		return;
+	}
+	if(event.keyCode === 106) {
+		listening = true
+		seed = ''
+	} else if (event.keyCode === 13) {
+		listening = false
+		jumping = true
+		initJump()
+	} else if (event.keyCode >= 48 && event.keyCode <= 57) {
+		seed += (event.keyCode - 48)
+	}
+}, false );
