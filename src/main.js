@@ -9,6 +9,11 @@ import Ship from './ship.js'
 import System from './system.js'
 import Dust from './dust.js'
 
+import EffectComposer from '../vendor/EffectComposer.js'
+import RenderPass from '../vendor/RenderPass.js'
+import ShaderPass from '../vendor/ShaderPass.js'
+import BlackholeShader from '../vendor/BlackholeShader.js'
+
 export default {
   init,
   run
@@ -23,7 +28,6 @@ const state = {
 }
 
 const objects = {
-  jumpEffect: null
 }
 
 export function init () {
@@ -35,7 +39,7 @@ export function init () {
 
   let container = document.getElementById('container')
   objects.controls = initControls(objects.ship, objects.camera, container)
-  objects.renderer = initRenderer(container)
+  objects.renderer = initRenderer(objects.scene, objects.camera, container)
 
   objects.sector = makeSector(objects.scene, 236575)
 
@@ -64,9 +68,9 @@ export function run () {
   	dust.update(controls, camera)
   	ship.update(controls)
     sector.update()
-  	updateHUD( sector.system, controls, camera )
+  	updateHUD( sector.system, controls, camera, jump.inProgress )
 
-  	renderer.render( scene, camera );
+  	renderer.render( delta );
 
     prevT = t
     stats.end()
@@ -75,15 +79,6 @@ export function run () {
   requestAnimationFrame( animate )
 }
 
-function animateJump (jumpState) {
-  if (objects.jumpEffect.scale.length() > 500) {
-    jumpState.inProgress = false
-    objects.sector = makeSector(objects.scene, jumpState.seed, objects.sector)
-    objects.jumpEffect.parent.remove(objects.jumpEffect)
-  } else {
-    objects.jumpEffect.scale.multiplyScalar(1.25)
-  }
-}
 
 function initStats () {
 	const stats = new Stats();
@@ -116,11 +111,22 @@ function initControls (ship, camera, container) {
   return controls
 }
 
-function initRenderer (container) {
+function initRenderer (scene, camera, container) {
   const renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, alpha: true})
 	renderer.setSize( window.innerWidth, window.innerHeight )
 	container.appendChild( renderer.domElement )
-  return renderer
+
+  const composer = new EffectComposer( renderer );
+
+  const renderPass = objects.renderPass = new RenderPass( scene, camera )
+  renderPass.renderToScreen = true
+  composer.addPass(renderPass)
+
+  const warpPass = objects.warpPass = new ShaderPass( BlackholeShader )
+  warpPass.enabled = false
+  composer.addPass(warpPass)
+
+  return composer
 }
 
 function makeSector (scene, seed, currentSector) {
@@ -132,10 +138,32 @@ function makeSector (scene, seed, currentSector) {
 	return newsector
 }
 
-function initJump (controls) {
-	const effect = new THREE.Mesh( new THREE.SphereBufferGeometry( 10, 32, 32 ), new THREE.MeshBasicMaterial({color: 0, side: THREE.DoubleSide}) );
-	controls.object.add(effect)
-  return effect
+function initJump () {
+  objects.renderPass.renderToScreen = false
+  objects.warpPass.renderToScreen = true
+  objects.warpPass.enabled = true
+  objects.warpPass.uniforms[ 'u_mass' ].value = 0.0001
+  objects.warpPass.uniforms[ 'u_clickedTime' ].value = 0.01
+}
+
+function endJump() {
+  objects.renderPass.renderToScreen = true
+  objects.warpPass.renderToScreen = false
+  objects.warpPass.enabled = false
+}
+
+function animateJump (jumpState) {
+  let mass = objects.warpPass.uniforms[ 'u_mass' ]
+  if (mass.value > 0.7) {
+    jumpState.inProgress = false
+    endJump()
+  } else if (jumpState.inProgress === 'in' && mass.value > 0.5) {
+    jumpState.inProgress = 'out'
+    objects.sector = makeSector(objects.scene, jumpState.seed, objects.sector)
+  } else {
+    mass.value *= 1.1
+  }
+  objects.warpPass.uniforms[ 'u_clickedTime' ].value += 0.02
 }
 
 const onKeyPress = event => {
@@ -149,8 +177,8 @@ const onKeyPress = event => {
 		state.jump.seed = ''
 	} else if (event.keyCode === 13) {
 		state.jump.listening = false
-		state.jump.inProgress = true
-		objects.jumpEffect = initJump(objects.controls)
+		state.jump.inProgress = 'in'
+		initJump()
 	} else if (event.keyCode >= 48 && event.keyCode <= 57) {
 		state.jump.seed += (event.keyCode - 48)
 	}

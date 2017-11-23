@@ -18,28 +18,30 @@ export function initHUD ( {planets, teleport} ) {
   // listPlanets(planets, teleport)
 }
 
-export function updateHUD ( system, controls, camera ) {
+export function updateHUD ( system, controls, camera, jumpInProgress ) {
   setAccelerometer(controls.velocityVector, controls.thrustVector)
   // setPosition(controls.object.getWorldPosition())
-  setPings(getVisibleObjects(system, camera))
+  setPings(system, camera, jumpInProgress)
 }
 
-export function setPings ( projections ) {
+export function setPings (system, camera, jumpInProgress ) {
   _.forEach(pings, p => {p.visible = false})
 
-  projections.forEach(({id, coords, d}) => {
-    if (!pings[id]) {
-      pings[id] = { id, ...createPing(id) }
-    }
-    pings[id].visible = true
-    pings[id].dist.innerHTML = formatNumber(d)
-    var container = getContainerDimensions()
-    var halfWidth  = container.size[ 0 ] / 2
-    var halfHeight = container.size[ 1 ] / 2
+  if (!jumpInProgress) {
+    getVisibleObjects(system, camera).forEach(({id, coords, d}) => {
+      if (!pings[id]) {
+        pings[id] = { id, ...createPing(id) }
+      }
+      pings[id].visible = true
+      pings[id].dist.innerHTML = formatNumber(d)
+      var container = getContainerDimensions()
+      var halfWidth  = container.size[ 0 ] / 2
+      var halfHeight = container.size[ 1 ] / 2
 
-    pings[id].el.style.left = Math.round(coords.x * halfWidth + halfWidth) + 'px'
-    pings[id].el.style.top = Math.round(- coords.y * halfHeight + halfHeight) + 'px'
-  })
+      pings[id].el.style.left = Math.round(coords.x * halfWidth + halfWidth) + 'px'
+      pings[id].el.style.top = Math.round(- coords.y * halfHeight + halfHeight) + 'px'
+    })
+  }
 
   let rejects = _.reject(pings, 'visible')
   rejects.map(p => {
