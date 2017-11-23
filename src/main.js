@@ -154,16 +154,16 @@ function endJump() {
 
 function animateJump (jumpState) {
   let mass = objects.warpPass.uniforms[ 'u_mass' ]
-  if (mass.value > 0.7) {
+  if (mass.value < 0.0001) {
     jumpState.inProgress = false
     endJump()
-  } else if (jumpState.inProgress === 'in' && mass.value > 0.5) {
+  } else if (jumpState.inProgress === 'in' && mass.value > 0.7) {
     jumpState.inProgress = 'out'
     objects.sector = makeSector(objects.scene, jumpState.seed, objects.sector)
   } else {
-    mass.value *= 1.1
+    mass.value *= jumpState.inProgress === 'in' ? 1.1 : 0.9
+    objects.warpPass.uniforms[ 'u_clickedTime' ].value += 0.037
   }
-  objects.warpPass.uniforms[ 'u_clickedTime' ].value += 0.02
 }
 
 const onKeyPress = event => {
