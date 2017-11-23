@@ -8,7 +8,7 @@ export default class System {
   constructor (generator, scene) {
     let system = new THREE.Group()
 
-    let star = new Star()
+    let star = new Star(generator)
   	system.add(star.mesh)
 
   	let planetCount = (generator.random() * 10) + 1
