@@ -4,8 +4,8 @@ import {loadTexture} from './loaders.js'
 export default class Star {
   constructor (generator) {
     let starSize = generator.random() * 1000000 + 300000
-    let cold = new THREE.Color(0xAAAAFF)
-    let hot = new THREE.Color(0xFFEEAA)
+    let cold = new THREE.Color(0x9999FF)
+    let hot = new THREE.Color(0xFFEE66)
     let baseColor = cold.lerp(hot, generator.random())
 
   	this.mesh = new THREE.Mesh(
