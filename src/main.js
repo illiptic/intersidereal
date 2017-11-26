@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import Stats from 'stats.js'
 import MT from 'mersenne-twister'
 
-import {initHUD, updateHUD} from './hud.js'
+// import {initHUD, updateHUD} from './hud.js'
 import FlyControls from './FlyControls.js'
 
 import Ship from './ship.js'
@@ -30,20 +30,22 @@ const state = {
 const objects = {
 }
 
-export function init () {
+let updateHUD
+
+export function init (container, update) {
+  updateHUD = update
   objects.stats = initStats()
   objects.scene = new THREE.Scene()
   objects.camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000000000 )
   objects.ship = initShip(objects.scene, objects.camera)
   objects.dust = initDust(objects.scene)
 
-  let container = document.getElementById('container')
   objects.controls = initControls(objects.ship, objects.camera, container)
   objects.renderer = initRenderer(objects.scene, objects.camera, container)
 
   objects.sector = makeSector(objects.scene, 236575)
 
-  objects.hud = initHUD({})
+  // objects.hud = initHUD({})
 
   attachEventListeners()
 }
@@ -68,7 +70,8 @@ export function run () {
   	dust.update(controls, camera)
   	ship.update(controls)
     sector.update()
-  	updateHUD( sector.system, controls, camera, jump.inProgress )
+    updateHUD({system: sector.system, camera})
+  	// updateHUD( sector.system, controls, camera, jump.inProgress )
 
   	renderer.render( delta );
 

@@ -1,6 +1,6 @@
 require('./main.less')
 
-import {init, run} from './main.js'
+import {h, render} from 'preact'
+import App from './components/App.js'
 
-init()
-run()
+render(<App />, document.body)

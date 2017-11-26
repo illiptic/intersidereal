@@ -2,7 +2,9 @@
   "presets": ["es2015", "stage-3"],
   "env": {
     "development": {
-      "plugins": []
+      "plugins": [
+        ["transform-react-jsx", { "pragma":"h" }]
+      ]
     }
   }
 }
