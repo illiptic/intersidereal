@@ -31,6 +31,9 @@ module.exports = {
         'css-loader',
         'less-loader?modules'],
       include: [path.join(__dirname, 'src'), path.resolve(__dirname, 'node_modules')]
+    }, {
+      test: /\.png|\.gif$/,
+      loaders: ['file-loader?name=assets/[name].[ext]']
     }]
   }
 };

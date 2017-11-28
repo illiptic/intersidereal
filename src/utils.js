@@ -19,4 +19,4 @@ export function getContainerDimensions (container) {
 }
 
 export const formatNumbers = (nums) => nums.map(formatNumber)
-export const formatNumber = (num) => num.toPrecision(3).split(/e[\+\-]/).join(' e<sup>')+'</sup>'
+export const formatNumber = (num) => num.toPrecision(3).split(/e[\+\-]/)

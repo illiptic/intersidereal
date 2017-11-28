@@ -14,8 +14,11 @@ export default class Hud extends Component {
         const container = getContainerDimensions()
         const halfWidth  = container.size[ 0 ] / 2
         const halfHeight = container.size[ 1 ] / 2
+
+        let distance = formatNumber(d)
         return {
-          distance: d,
+          distance: distance[0],
+          distanceScale: distance[1],
           position: {
             left: Math.round(coords.x * halfWidth + halfWidth) + 'px',
             top: Math.round(- coords.y * halfHeight + halfHeight) + 'px'
@@ -48,7 +51,7 @@ export default class Hud extends Component {
       <div id="hud">
         {system && camera && this.getPings(system, camera, jumpInProgress).map(ping => (
           <div className="ping" style={ping.position}>
-            <div className="distance" dangerouslySetInnerHTML={{__html: formatNumber(ping.distance)}}></div>
+            <div className="distance">{ping.distance} e<sup>{ping.distanceScale}</sup></div>
           </div>
         ))}
       </div>
