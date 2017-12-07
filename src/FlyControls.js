@@ -208,7 +208,7 @@ export default function FlyControls ( object, camera, domElement ) {
 		this.lookAngle.x -= this.lookVector.x * rotMult
 		this.lookAngle.y += this.lookVector.y * rotMult
 		this.lookAngle.y = THREEMath.clamp(this.lookAngle.y, Math.PI / 4, 3*Math.PI/4)
-		let spherical = new Spherical(400, this.lookAngle.y, this.lookAngle.x)
+		let spherical = new Spherical(50, this.lookAngle.y, this.lookAngle.x)
 		cam.position.setFromSpherical(spherical)
 		cam.rotation.set(this.lookAngle.y - Math.PI / 2, this.lookAngle.x, 0, 'YXZ')
 	};

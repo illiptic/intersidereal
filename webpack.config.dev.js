@@ -16,7 +16,8 @@ module.exports = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Intersidereal'
+      title: 'Intersidereal',
+      favicon: 'assets/favicon.ico'
     })
   ],
   module: {

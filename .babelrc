@@ -5,6 +5,11 @@
       "plugins": [
         ["transform-react-jsx", { "pragma":"h" }]
       ]
+    },
+    "production": {
+      "plugins": [
+        ["transform-react-jsx", { "pragma":"h" }]
+      ]
     }
   }
 }

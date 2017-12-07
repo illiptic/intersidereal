@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import * as THREE from 'three'
-const basePath = '/assets/'
+const basePath = 'assets/'
 
 window.THREE = THREE
 require("three/examples/js/loaders/OBJLoader2")

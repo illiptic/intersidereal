@@ -17,7 +17,7 @@ export default class Ship {
 
   createMesh (model) {
     loadModel(path + model).then(ship => {
-  		ship.scale.set(10, 10, 10)
+  		// ship.scale.set(10, 10, 10)
       ship.rotation.set(0, -Math.PI/2, 0)
       this.mesh.add(ship)
 
