@@ -29,7 +29,7 @@ module.exports = {
     //   }
     // }),
     new CopyWebpackPlugin([
-      { from: 'assets/**/*', to: 'assets/[name].[ext]', ignore: ['.*'] }
+      { from: 'assets', to: 'assets', ignore: ['.*'] }
     ])
   ],
   module: {
